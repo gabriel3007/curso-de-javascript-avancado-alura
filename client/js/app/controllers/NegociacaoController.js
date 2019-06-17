@@ -17,12 +17,31 @@ class NegociacaoController {
             new MensagemView($('#mensagemView')),
             'texto');
     }
+
+    importaNegociacoes(){
+        NegociacaoService.obterNegociacoesDaSemana((err, negociacoes) => {
+            if(err){
+                this._mensagem.texto = err;
+                return;
+            }
+            negociacoes.forEach(n => this._listaNegociacoes.adiciona(n));
+            this._mensagem.texto = 'Negociações importadas com sucesso';
+        });    
+    }
     
     adiciona(event) {
         event.preventDefault();
-        this._listaNegociacoes.adiciona(this._criaNegociacao());
-        this._mensagem.texto = 'Negociação adicionada com sucesso';        
-        this._limpaFormulario();   
+        let negociacao = this._criaNegociacao();
+        NegociacaoService.enviaNegociacao(negociacao, err => {
+            if(err){
+                this._mensagem.texto = err;
+                // Servidor não está recebendo o request
+                //return;
+            }
+            this._listaNegociacoes.adiciona(negociacao);
+            this._mensagem.texto = 'Negociação adicionada com sucesso';        
+            this._limpaFormulario();   
+        } );
     }
 
     apaga() {
