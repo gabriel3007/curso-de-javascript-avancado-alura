@@ -7,10 +7,14 @@ class NegociacaoController {
         this._inputQuantidade = $('#quantidade');
         this._inputValor = $('#valor');
 
+        this._negociacaoService = new NegociacaoService();
+
+        this._ordemAtual = '';
+
         this._listaNegociacoes = new Bind(
             new ListaNegociacoes(),
             new NegociacoesView($('#negociacoesView')),
-            'adiciona', 'esvazia');
+            'adiciona', 'esvazia', 'ordena', 'inverteOrdem');
 
         this._mensagem = new Bind(
             new Mensagem(),
@@ -19,20 +23,19 @@ class NegociacaoController {
     }
 
     importaNegociacoes(){
-        NegociacaoService.obterNegociacoesDaSemana((err, negociacoes) => {
-            if(err){
-                this._mensagem.texto = err;
-                return;
-            }
-            negociacoes.forEach(n => this._listaNegociacoes.adiciona(n));
-            this._mensagem.texto = 'Negociações importadas com sucesso';
-        });    
+        this._negociacaoService.obterNegociacoes()
+            .then(negociacoes =>{
+                negociacoes.forEach(negociacao =>
+                    this._listaNegociacoes.adiciona(negociacao));
+                this._mensagem.texto = 'Negociações obtidas com sucesso';
+            })
+            .catch(err => this._mensagem.texto = err);
     }
     
     adiciona(event) {
         event.preventDefault();
         let negociacao = this._criaNegociacao();
-        NegociacaoService.enviaNegociacao(negociacao, err => {
+        this._negociacaoService.enviaNegociacao(negociacao, err => {
             if(err){
                 this._mensagem.texto = err;
                 // Servidor não está recebendo o request
@@ -48,7 +51,16 @@ class NegociacaoController {
         this._listaNegociacoes.esvazia();
         this._mensagem.texto = 'Negociação apagadas com sucesso';
     }
-    
+
+    ordena(coluna){
+        if(this._ordemAtual == coluna){
+            this._listaNegociacoes.inverteOrdem();
+        } else {
+            this._listaNegociacoes.ordena((a, b) => a[coluna] - b[coluna]);
+        }
+        this._ordemAtual = coluna;
+    }
+
     _criaNegociacao() {
         
         return new Negociacao(
