@@ -46,7 +46,7 @@ class NegociacaoDao{
 
             cursor.onerror = e => {
                 console.log(e.target.error);
-                reject('Não foi possível listar as negociações');
+                reject('Não foi possível obter as negociações');
             }
         });
     }

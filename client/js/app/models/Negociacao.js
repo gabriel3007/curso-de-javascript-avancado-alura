@@ -7,6 +7,10 @@ class Negociacao {
         this._valor = valor;
         Object.freeze(this);
     }
+
+    equals(outraNegociacao){
+        return JSON.stringify(this) == JSON.stringify(outraNegociacao);
+    }
     
     get volume() {
         
